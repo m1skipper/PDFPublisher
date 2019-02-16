@@ -1,0 +1,30 @@
+..\bin\Release\PDFPublisher.exe combine --input="зигзаг.pdf,Saga.pdf" --output="output-зигзаг.Saga.pdf"
+
+..\bin\Release\PDFPublisher.exe barcode --type=ean8 --code=12345670 --input="зигзаг.pdf" --output="output-зигзаг.barcode.pdf" --offsety=580 --offsetx=2 --rotate=270
+
+..\bin\Release\PDFPublisher.exe convert --input="настройка1.png" --output="output-­настройка1.pdf"
+
+..\bin\Release\PDFPublisher.exe barcode --type=code128 --code=F322223322 --input="Тест.pdf" --output="output-Тест.barcode.pdf"
+..\bin\Release\PDFPublisher.exe barcode --type=code128 --code=F322223322 --input="Тест3.pdf" --output="output-Тест3.barcode.pdf"
+
+..\bin\Release\PDFPublisher.exe pagesizes --input="Тест3.pdf"
+
+..\bin\Release\PDFPublisher.exe barcodeonlabel --label="[<BARCODE_PLACEHOLDER>]" --type=code128 --code=123456789 --width=fit --input="ReduktorTest3.pdf" --output="output-ReduktorTest3.pdf"
+
+..\bin\Release\PDFPublisher.exe imageonlabel --label="[<BARCODE_PLACEHOLDER>]" --imageFile=kot.gif --width=fit --input="test0.pdf" --output="output-test0.pdf"
+
+..\bin\Release\PDFPublisher.exe barcodereplace --label=123456789 --code=000000000 --input="Scan.pdf" --output=\"output-Scan.pdf"
+
+..\bin\Release\PDFPublisher.exe combine --input="output-зигзаг.barcode.pdf,output-­настройка1.pdf,output-Тест.barcode.pdf" --output="output-many.pdf"
+
+..\bin\Release\PDFPublisher.exe scanbarcode --input="output-many.pdf"
+
+..\bin\Release\PDFPublisher.exe cut --input="output-many.pdf" --output="output-cut.pdf" --from=1 --to=2
+ 
+
+
+
+
+
+
+..\bin\Release\PDFPublisher.exe barcodereplace --label=123456789 --code=123456789 --input="Scan.pdf" --output=\"output-Scan1.pdf"

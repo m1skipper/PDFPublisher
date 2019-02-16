@@ -1,0 +1,13 @@
+Program use libraries:
+
+Command Line Parser library MIT License
+https://github.com/gsscoder/commandline/blob/master/License.md
+
+PdfiumViewer Apache License Version 2
+https://www.apache.org/licenses/LICENSE-2.0
+
+ZXing.Net Apache License Version 2
+http://zxingnet.codeplex.com/license
+
+iTextSharp AGPL
+http://www.gnu.org/licenses/agpl.html
