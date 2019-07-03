@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Drawing;
 using ZXing;
-using iTextSharp.text.pdf;
 
 namespace PDFPublisher
 {
@@ -18,8 +17,6 @@ namespace PDFPublisher
         public const string Ean13 = "ean13";
         public const string Ean128 = "ean128";
         public const string Code128 = "code128";
-        public const string qrcode = "qrcode";
-   
 
         /// <summary>
         /// Поличить тип штрих кода из текстового описания
@@ -29,14 +26,13 @@ namespace PDFPublisher
         {
             switch(barCode)
             {
-                //case BarcodeType.qrcode: return iTextSharp.text.pdf.BarcodeQRCode.qrcode;
                 case BarcodeType.Ean8: return iTextSharp.text.pdf.Barcode.EAN8;
                 case BarcodeType.Ean13: return iTextSharp.text.pdf.Barcode.EAN13;
                 case BarcodeType.Ean128:
                 case BarcodeType.Code128:
                     return iTextSharp.text.pdf.Barcode.CODE128;
             }
-            throw new Exception("1Not supported barcode: " + barCode);
+            throw new Exception("Not supported barcode: " + barCode);
         }
 
         /// <summary>
@@ -47,22 +43,19 @@ namespace PDFPublisher
         {
             switch (barCode)
             {
-               // case BarcodeType.qrcode: return BarcodeFormat.QR_CODE;
                 case BarcodeType.Ean8: return BarcodeFormat.EAN_8;
                 case BarcodeType.Ean13: return BarcodeFormat.EAN_13;
                 case BarcodeType.Ean128:
                 case BarcodeType.Code128:
                     return BarcodeFormat.CODE_128;
             }
-            throw new Exception("2Not supported barcode: " + barCode);
+            throw new Exception("Not supported barcode: " + barCode);
         }
 
         static public string ToString(BarcodeFormat barcodeFormat)
         {
             switch (barcodeFormat)
             {
-                //case BarcodeFormat.QR_CODE:
-                    //return BarcodeType.qrcode;
                 case BarcodeFormat.EAN_8:
                     return BarcodeType.Ean8;
                 case BarcodeFormat.EAN_13:

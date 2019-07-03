@@ -15,7 +15,7 @@ namespace PDFPublisher
         {
             const int RET_OK = 0;
             const int RET_ERR = 1;
-
+            
             var options = new Options();
             if (CommandLine.Parser.Default.ParseArguments(args, options))
             {
@@ -63,22 +63,6 @@ namespace PDFPublisher
                             }
                             break;
                         }
-                        case "qrcode":
-                            {
-                                var files = options.Input.Trim('\"').Split(',');
-                                var output = options.Output.Trim('\"');
-                                var code = options.Code.Trim('\"');
-                                int offsetX = options.OffsetX;
-                                int offsetY = options.OffsetY;
-                                int rotate = options.Rotate;
-                                //int type = !string.IsNullOrEmpty(options.Type) ? GetBarCodeType(options.Type) : iTextSharp.text.pdf.Barcode.EAN8;
-                                //int offsetX = !string.IsNullOrEmpty(options.Type) ? GetBarCodeType(options.Type) : iTextSharp.text.pdf.Barcode.EAN8;
-                                foreach (var file in files)
-                                {
-                                    PdfOperations.QR_Stamp(file, code, output, offsetX, offsetY, rotate);
-                                }
-                                break;
-                            }
                         case "convert":
                         {
                             var input = options.Input.Trim('\"');

@@ -8,7 +8,6 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.IO;
 using iTextSharp.text.pdf.parser;
-using ZXing;
 
 namespace PDFPublisher
 {
@@ -298,66 +297,6 @@ namespace PDFPublisher
         }
 
         /// <summary>
-        /// Добавить QRcode в каждую страницу файла pdf
-        /// </summary>
-        /// <param name="pdfFile">Файл pdf</param>
-        /// <param name="code">Значение штрихкода</param>
-        /// <param name="outFile">Выходной файл pdf</param>
-        /// <param name="type">Тип бар кода, какие поддерживаются см. функцию CreateBarcode</param>
-        /// <param name="offsetX">Смещение по X</param>
-        /// <param name="offsetY">Смещение по Y</param>
-        public static void QR_Stamp(string pdfFile, string code, string outFile, int offsetX = 200, int offsetY = 200, int rotateDegrees = 270)
-        {
-            /*System.IO.FileStream fs = new FileStream(outFile, FileMode.Create);
-            PdfReader reader = new PdfReader(pdfFile);
-            PdfStamper stamper = new PdfStamper(reader, fs);
-            int n = reader.NumberOfPages;
-            iTextSharp.text.Rectangle pagesize;*/
-
-    
-            System.IO.FileStream fs = new FileStream(outFile, FileMode.Create);
-            PdfReader reader = new PdfReader(pdfFile);
-            PdfStamper stamper = new PdfStamper(reader, fs);
-
-            Document doc = new Document();
-
-            BarcodeQRCode qrcode = new BarcodeQRCode("teststststststs", 100, 100, null);
-            iTextSharp.text.Image imgBarCode = qrcode.GetImage();
-            imgBarCode.SetAbsolutePosition(150, 150);
-            try
-            {
-                doc.Open();
-                doc.Add(new Paragraph("GIF"));
-
-                doc.Add(imgBarCode);
-                MemoryStream ms = new MemoryStream(imgBarCode.OriginalData);
-                System.Drawing.Image returnImage = System.Drawing.Image.FromStream(ms);
-
-                // img = returnImage.Save(new Stream(), System.Drawing.Imaging.ImageFormat.Jpeg);
-
-            }
-            catch (IOException e)
-            {
-                // Extract some information from this exception, and then 
-                // throw it to the parent method.
-                if (e.Source != null)
-                    Console.WriteLine("ne robit ska", e.Source);
-                throw;
-            }
-            finally
-            {
-                doc.Close();
-                stamper.Close();
-                reader.Close();
-            }
-
-
-        }
-
-
-
-
-        /// <summary>
         /// Посчитать контрольную цифру
         /// </summary>
         /// <param name="code"></param>
@@ -422,16 +361,6 @@ namespace PDFPublisher
             Barcode barcode = null;
             switch (type)
             {
-                /*case BarcodeType.qrcode:
-                   {
-                       var qrcode = new BarcodeQRCode("123456780-9", 28, 28, null);
-                       var image = qrcode.GetImage();
-                       image.ScaleToFitHeight = false;
-                       image.SetAbsolutePosition(28f, 28f);
-                       image.SetDpi(300, 300);
-                       barcode.CodeType = BarcodeFormat.QR_CODE;
-                       break;
-                   }*/
                 case BarcodeType.Ean8:
                     {
                         barcode = new BarcodeEAN();
@@ -457,7 +386,7 @@ namespace PDFPublisher
                         break;
                     }
                 default:
-                    throw new System.Exception("3Not supported barcode type");
+                    throw new System.Exception("Not supported barcode type");
             }
 
             // Установим дополнительные параметры

@@ -4,14 +4,4 @@
     <StartArguments>cut --input="output-many.pdf" --output="out.pdf" --from=2 --to=3</StartArguments>
     <StartAction>Project</StartAction>
   </PropertyGroup>
-  <PropertyGroup>
-    <PublishUrlHistory>publish\</PublishUrlHistory>
-    <InstallUrlHistory />
-    <SupportUrlHistory />
-    <UpdateUrlHistory />
-    <BootstrapperUrlHistory />
-    <ErrorReportUrlHistory />
-    <FallbackCulture>ru-RU</FallbackCulture>
-    <VerifyUploadedFiles>false</VerifyUploadedFiles>
-  </PropertyGroup>
 </Project>

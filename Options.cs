@@ -27,7 +27,7 @@ namespace PDFPublisher
         public string Output { get; set; }
 
         [Option('t', "type", DefaultValue = "ean8",
-         HelpText = "Barcode type: ean8, ean13, code128, qrcode.")]
+         HelpText = "Barcode type: ean8, ean13, code128.")]
         public string Type { get; set; }
 
         [Option('c', "code", 
