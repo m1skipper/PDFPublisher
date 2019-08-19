@@ -127,8 +127,8 @@ namespace PDFPublisher
             sb.AppendLine();
 
             sb.AppendLine(" imageonlabel - print image over label on each page of pdf document");
-            sb.AppendLine("  options: --input, --output, --label, --imagefile, --width, --height, --center");
-            sb.AppendLine("  example: PDFPublisher.exe imageonlabel --label=\"[<BARCODE_PLACEHOLDER>]\" --imageFile=test.png --width=fit --input=\"file.pdf\" --output=\"result.pdf\"");
+            sb.AppendLine("  options: --input, --output, --label, --imagefile, --width, --height, --center, --log");
+            sb.AppendLine("  example: PDFPublisher.exe imageonlabel --label=\"[<BARCODE_PLACEHOLDER>]\" --imageFile=test.png --width=fit --input=\"file.pdf\" --output=\"result.pdf\" --log=\"log.txt\"");
             sb.AppendLine();
 
             sb.AppendLine(" barcodereplace - replace(print over) one barcode in pdf document by other(code 128)");
@@ -160,9 +160,19 @@ namespace PDFPublisher
             sb.AppendLine("  example: PDFPublisher.exe find --input=\"file.pdf\" --page=1 --label=labeltext");
             sb.AppendLine();
 
+            sb.AppendLine(" findall - find all text labels in pdf by mask");
+            sb.AppendLine("  options: --input, --output, --label");
+            sb.AppendLine("  example: PDFPublisher.exe findall --input=\"file.pdf\" --output=\"alllabels.txt\" --label=\"label*with?mask\"");
+            sb.AppendLine();
+
             sb.AppendLine(" pagesizes - display sizes of all pdf pages(width and height divided by ;)");
             sb.AppendLine("  options: --input");
             sb.AppendLine("  example: PDFPublisher.exe pagesizes --input=\"file.pdf\"");
+            sb.AppendLine();
+
+            sb.AppendLine(" batchfile - execute list of any commands described above");
+            sb.AppendLine("  options: --input");
+            sb.AppendLine("  example: PDFPublisher.exe batchfile --input=\"batch.txt\"");
             sb.AppendLine();
 
             sb.Append("Option description:");

@@ -8,6 +8,7 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 using System.IO;
 using iTextSharp.text.pdf.parser;
+using System.Text.RegularExpressions;
 
 namespace PDFPublisher
 {
@@ -438,6 +439,62 @@ namespace PDFPublisher
             return findedItems;
         }
 
+        public static void SearchAllLabels(string input, string output, string labelMask)
+        {
+            if (!File.Exists(input))
+                throw new FileNotFoundException(FILE_NOT_FOUND, input);
+
+            var findedItems = new List<string>();
+
+            Regex mask = new Regex("^" + Regex.Escape(labelMask).Replace("\\*", ".*").Replace("\\?", ".") + "$");
+
+            try
+            {
+                using (PdfReader pdfReader = new PdfReader(input))
+                {
+                    for (int page = 1; page <= pdfReader.NumberOfPages; page++)
+                    {
+                        var strategy = new PDFCompare.Comparer.LocationExtractionStrategy();
+                        strategy.Page = page;
+                        PdfTextExtractor.GetTextFromPage(pdfReader, page, strategy);
+                        List<PDFCompare.Comparer.TextItem> items = strategy.GetTextItems();
+
+                        foreach (var item in items)
+                        {
+                            var word = item.Text;
+                            if (mask.IsMatch(word))
+                            {
+                                if (findedItems.Find(i => i == word) == null)
+                                {
+                                    findedItems.Add(word);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine(OPERATION_ERROR);
+                Console.WriteLine(ex.Message);
+                return;
+            }
+            TextWriter tw = new StreamWriter(output);
+            if (findedItems.Count > 0)
+            {
+                foreach (var item in findedItems)
+                {
+                    Console.WriteLine(item);
+                    tw.WriteLine(item);
+                }
+            }
+            else
+            {
+                Console.WriteLine(LABEL_NOT_FOUND);
+            }
+            tw.Close();
+        }
+
         /// <summary>
         /// https://stackoverflow.com/questions/802269/extract-images-using-itextsharp
         /// </summary>
@@ -740,7 +797,7 @@ namespace PDFPublisher
             }
         }
 
-        static public bool PlaceImageOnLabel(string input, string output, string label, string imgFile, string widthParam, string heightParam, bool center)
+        static public bool PlaceImageOnLabel(string input, string output, string label, string imgFile, string widthParam, string heightParam, bool center, string log)
         {
             if (!File.Exists(input))
                 throw new FileNotFoundException(FILE_NOT_FOUND, input);
@@ -783,94 +840,116 @@ namespace PDFPublisher
 
             System.IO.FileStream fs = new FileStream(output, FileMode.Create);
 
-            using (PdfReader pdfReader = new PdfReader(input))
+            try
             {
-                PdfStamper stamper = new PdfStamper(pdfReader, fs);
-
-                iTextSharp.text.Image img = iTextSharp.text.Image.GetInstance(imgFile);
-                img.SetAbsolutePosition(0, 0);
-
-                for (int page = 1; page <= pdfReader.NumberOfPages; page++)
+                using (PdfReader pdfReader = new PdfReader(input))
                 {
-                    var strategy = new PDFCompare.Comparer.LocationExtractionStrategy();
-                    strategy.Page = page;
-                    PdfTextExtractor.GetTextFromPage(pdfReader, page, strategy);
-                    List<PDFCompare.Comparer.TextItem> items = strategy.GetTextItems();
+                    PdfStamper stamper = new PdfStamper(pdfReader, fs);
 
-                    PdfContentByte over = stamper.GetOverContent(page);
+                    iTextSharp.text.Image img = iTextSharp.text.Image.GetInstance(imgFile);
+                    img.SetAbsolutePosition(0, 0);
 
-                    foreach (var item in items)
+                    WriteLog(string.Format("input {0} (NumberOfPages {1})", input, pdfReader.NumberOfPages), log);
+                    WriteLog(string.Format("output {0}", output), log);
+                    WriteLog(string.Format("label {0}", label), log);
+                    WriteLog(string.Format("imagefile {0}", imgFile), log);
+
+                    for (int page = 1; page <= pdfReader.NumberOfPages; page++)
                     {
-                        var word = item.Text;
-                        if (word == label)
+                        var strategy = new PDFCompare.Comparer.LocationExtractionStrategy();
+                        strategy.Page = page;
+                        PdfTextExtractor.GetTextFromPage(pdfReader, page, strategy);
+                        List<PDFCompare.Comparer.TextItem> items = strategy.GetTextItems();
+
+                        PdfContentByte over = stamper.GetOverContent(page);
+
+                        foreach (var item in items)
                         {
-                            float rotateDegrees = 0;
-
-                            Vector leftBottom = item.DescentLine.GetStartPoint();
-                            Vector rightTop = item.AscentLine.GetEndPoint();
-
-                            float offsetX = leftBottom[0];
-                            float offsetY = leftBottom[1];
-
-                            // GetPageSize - возвращает размер без учета ориентации(альбомная, вертикальная), т.е. в случае альбомной width и height
-                            // будут перепутаны при отображении на экране и позиционировании, поэтому нужно делать GetPageSizeWithRotation.
-                            iTextSharp.text.Rectangle pagesize = pdfReader.GetPageSizeWithRotation(page);
-
-                            PdfTemplate template = over.CreateTemplate(img.Width, img.Height);
-                            template.AddImage(img);
-
-                            var matrix = new System.Drawing.Drawing2D.Matrix();
-
-                            // Трансформации применяются в обратном порядке
-                            //
-                            Vector v = item.DescentLine.GetEndPoint().Subtract(item.DescentLine.GetStartPoint());
-                            rotateDegrees = (float)(Math.Atan2((double)v[1], (double)v[0]) * 180 / Math.PI);
-
-                            int pageRotation = pdfReader.GetPageRotation(page);
-                            
-                            // Если страница повернута, то мы получаем координаты на неповернутой странице,
-                            // а AddTemplate делает в координатах повернутой.
-                            // Поэтому преобразуем штамп обратно в координаты неповернутой.
-                            switch (pageRotation)
+                            var word = item.Text;
+                            if (word == label)
                             {
-                                case 90: matrix.Translate(0, pagesize.Height); break;
-                                case 180: matrix.Translate(pagesize.Width, pagesize.Height); break;
-                                case 270: matrix.Translate(pagesize.Width, 0); break;
+                                float rotateDegrees = 0;
+
+                                Vector leftBottom = item.DescentLine.GetStartPoint();
+                                Vector rightTop = item.AscentLine.GetEndPoint();
+
+                                float offsetX = leftBottom[0];
+                                float offsetY = leftBottom[1];
+
+                                // GetPageSize - возвращает размер без учета ориентации(альбомная, вертикальная), т.е. в случае альбомной width и height
+                                // будут перепутаны при отображении на экране и позиционировании, поэтому нужно делать GetPageSizeWithRotation.
+                                iTextSharp.text.Rectangle pagesize = pdfReader.GetPageSizeWithRotation(page);
+
+                                PdfTemplate template = over.CreateTemplate(img.Width, img.Height);
+                                template.AddImage(img);
+
+                                var matrix = new System.Drawing.Drawing2D.Matrix();
+
+                                // Трансформации применяются в обратном порядке
+                                //
+                                Vector v = item.DescentLine.GetEndPoint().Subtract(item.DescentLine.GetStartPoint());
+                                rotateDegrees = (float)(Math.Atan2((double)v[1], (double)v[0]) * 180 / Math.PI);
+
+                                WriteLog(string.Format("label match at page {0}, offsetX {1}, offsetY {2}, rotateDegrees {3}", page, offsetX, offsetY, rotateDegrees), log);
+
+                                int pageRotation = pdfReader.GetPageRotation(page);
+
+                                // Если страница повернута, то мы получаем координаты на неповернутой странице,
+                                // а AddTemplate делает в координатах повернутой.
+                                // Поэтому преобразуем штамп обратно в координаты неповернутой.
+                                switch (pageRotation)
+                                {
+                                    case 90: matrix.Translate(0, pagesize.Height); break;
+                                    case 180: matrix.Translate(pagesize.Width, pagesize.Height); break;
+                                    case 270: matrix.Translate(pagesize.Width, 0); break;
+                                }
+                                if (pageRotation != 0)
+                                    matrix.Rotate(360 - pageRotation);
+
+                                // Сдвинем штрих код на свое место
+                                matrix.Translate(offsetX, offsetY);
+
+                                // Повернем штрихкод как текст повернут
+                                float w = (item.DescentLine.GetEndPoint().Subtract(item.DescentLine.GetStartPoint())).Length;
+                                img.ScaleToFit(w, w*img.Height/img.Width);
+                                matrix.Rotate(rotateDegrees);
+
+                                // Отмасштабируем штрихкод чтобы вписать в п/у текста
+                                float widthLabel = width != 0 ? width : (item.DescentLine.GetEndPoint().Subtract(item.DescentLine.GetStartPoint())).Length;
+                                float heightLabel = height != 0 ? height : (item.AscentLine.GetStartPoint().Subtract(item.DescentLine.GetStartPoint())).Length;
+
+                                float scaleX = scaleByWidth ? widthLabel / img.Width : 0;
+                                float scaleY = scaleByHeight ? heightLabel / img.Height : 0;
+                                if (scaleX != 0 && scaleY == 0) scaleY = scaleX;
+                                if (scaleY != 0 && scaleX == 0) scaleX = scaleY;
+                                if (scaleX != 0 && scaleY != 0)
+                                {
+                                    matrix.Scale(scaleX, scaleY);
+                                }
+
+                                // Применим шаблон и преобразования
+                                float[] elements = matrix.Elements;
+                                over.AddTemplate(template, elements[0], elements[1], elements[2], elements[3], elements[4], elements[5]);
+
+                                labelFinded = true;
                             }
-                            if (pageRotation != 0)
-                                matrix.Rotate(360 - pageRotation);
-                          
-                            // Сдвинем штрих код на свое место
-                            matrix.Translate(offsetX, offsetY);
-
-                            // Повернем штрихкод как текст повернут
-                            float w = (item.DescentLine.GetEndPoint().Subtract(item.DescentLine.GetStartPoint())).Length;
-                            img.ScaleToFit(w, w*img.Height/img.Width);
-                            matrix.Rotate(rotateDegrees);
-
-                            // Отмасштабируем штрихкод чтобы вписать в п/у текста
-                            float widthLabel = width != 0 ? width : (item.DescentLine.GetEndPoint().Subtract(item.DescentLine.GetStartPoint())).Length;
-                            float heightLabel = height != 0 ? height : (item.AscentLine.GetStartPoint().Subtract(item.DescentLine.GetStartPoint())).Length;
-
-                            float scaleX = scaleByWidth ? widthLabel / img.Width : 0;
-                            float scaleY = scaleByHeight ? heightLabel / img.Height : 0;
-                            if (scaleX != 0 && scaleY == 0) scaleY = scaleX;
-                            if (scaleY != 0 && scaleX == 0) scaleX = scaleY;
-                            if (scaleX != 0 && scaleY != 0)
-                            {
-                                matrix.Scale(scaleX, scaleY);
-                            }
-
-                            // Применим шаблон и преобразования
-                            float[] elements = matrix.Elements;
-                            over.AddTemplate(template, elements[0], elements[1], elements[2], elements[3], elements[4], elements[5]);
-
-                            labelFinded = true;
                         }
                     }
+                    stamper.Close();
                 }
-                stamper.Close();
             }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine(OPERATION_ERROR);
+                Console.WriteLine(ex.Message);
+                WriteLog(string.Format("{0}{1}", OPERATION_ERROR, ex.Message), log);
+                fs.SetLength(0);
+                fs.Close();
+                CloseLog(log);
+                return false;
+            }
+            if (!labelFinded) WriteLog(LABEL_NOT_FOUND, log);
+            CloseLog(log);
             return labelFinded;
         }
 
@@ -951,6 +1030,22 @@ namespace PDFPublisher
             // Применим шаблон и преобразования
             float[] elements = matrix.Elements;
             over.AddTemplate(template, elements[0], elements[1], elements[2], elements[3], elements[4], elements[5]);
+        }
+
+        static private void WriteLog(string text, string log)
+        {
+            if (log == "") return;
+            TextWriter tw = new StreamWriter(log, true);
+            tw.WriteLine(string.Format("{0} {1}", DateTime.Now, text));
+            tw.Close();
+        }
+
+        static private void CloseLog(string log)
+        {
+            if (log == "") return;
+            TextWriter tw = new StreamWriter(log, true);
+            tw.WriteLine("\n" + new String('=', 80) + "\n");
+            tw.Close();
         }
     }
 }
