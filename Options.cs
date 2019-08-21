@@ -94,7 +94,11 @@ namespace PDFPublisher
         [Option('z', "to", DefaultValue = 0,
         HelpText = "Page number(start from 1), value 0 - all pages")]
         public int ToPage { get; set; }
-        
+
+        [Option("log", DefaultValue = "",
+            HelpText = "Log file")]
+        public string Log { get; set; }
+
         [HelpOption]
         public string GetUsage()
         {
