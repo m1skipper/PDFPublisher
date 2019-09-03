@@ -320,6 +320,19 @@ namespace PDFPublisher
                         PdfOperations.HelloWorld(output);
                         break;
                     }
+                case "findpages":
+                    {
+                        var input = options.Input.Trim('\"');
+                        var output = options.Output.Trim('\"');
+                        var labelMask = options.Label;
+                        if (input == output)
+                        {
+                            throw new Exception(PdfOperations.FILE_MUST_BE_DIFFERENT);
+                        }
+
+                        PdfOperations.SearchAllPagesByMask(input, output, labelMask);
+                        break;
+                    }
             }
         }
 

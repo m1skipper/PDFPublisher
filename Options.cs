@@ -179,6 +179,11 @@ namespace PDFPublisher
             sb.AppendLine("  example: PDFPublisher.exe batchfile --input=\"batch.txt\"");
             sb.AppendLine();
 
+            sb.AppendLine(" findpages - find all pages in pdf with text labels by mask");
+            sb.AppendLine("  options: --input, --output, --label");
+            sb.AppendLine("  example: PDFPublisher.exe findpages --input=\"file.pdf\" --output=\"allpages.txt\" --label=\"label*with?mask\"");
+            sb.AppendLine();
+
             sb.Append("Option description:");
 
             ht.Heading = "PDFPublisher utility.";

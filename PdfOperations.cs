@@ -495,6 +495,62 @@ namespace PDFPublisher
             tw.Close();
         }
 
+        public static void SearchAllPagesByMask(string input, string output, string labelMask)
+        {
+            if (!File.Exists(input))
+                throw new FileNotFoundException(FILE_NOT_FOUND, input);
+
+            var findedItems = new List<string>();
+
+            Regex mask = new Regex("^" + Regex.Escape(labelMask).Replace("\\*", ".*").Replace("\\?", ".") + "$");
+
+            try
+            {
+                using (PdfReader pdfReader = new PdfReader(input))
+                {
+                    for (int page = 1; page <= pdfReader.NumberOfPages; page++)
+                    {
+                        var strategy = new PDFCompare.Comparer.LocationExtractionStrategy();
+                        strategy.Page = page;
+                        PdfTextExtractor.GetTextFromPage(pdfReader, page, strategy);
+                        List<PDFCompare.Comparer.TextItem> items = strategy.GetTextItems();
+
+                        foreach (var item in items)
+                        {
+                            var word = item.Text;
+                            if (mask.IsMatch(word))
+                            {
+                                if (findedItems.Find(i => i == page.ToString()) == null)
+                                {
+                                    findedItems.Add(page.ToString());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine(OPERATION_ERROR);
+                Console.WriteLine(ex.Message);
+                return;
+            }
+            TextWriter tw = new StreamWriter(output);
+            if (findedItems.Count > 0)
+            {
+                foreach (var item in findedItems)
+                {
+                    Console.WriteLine(item);
+                    tw.WriteLine(item);
+                }
+            }
+            else
+            {
+                Console.WriteLine(LABEL_NOT_FOUND);
+            }
+            tw.Close();
+        }
+
         /// <summary>
         /// https://stackoverflow.com/questions/802269/extract-images-using-itextsharp
         /// </summary>
