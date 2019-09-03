@@ -333,6 +333,19 @@ namespace PDFPublisher
                         PdfOperations.SearchAllPagesByMask(input, output, labelMask);
                         break;
                     }
+                case "gettext":
+                    {
+                        var input = options.Input.Trim('\"');
+                        var output = options.Output.Trim('\"');
+                        var page = options.Page;
+                        if (input == output)
+                        {
+                            throw new Exception(PdfOperations.FILE_MUST_BE_DIFFERENT);
+                        }
+
+                        PdfOperations.GetAllWords(input, output, page);
+                        break;
+                    }
             }
         }
 

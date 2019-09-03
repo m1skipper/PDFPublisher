@@ -184,6 +184,11 @@ namespace PDFPublisher
             sb.AppendLine("  example: PDFPublisher.exe findpages --input=\"file.pdf\" --output=\"allpages.txt\" --label=\"label*with?mask\"");
             sb.AppendLine();
 
+            sb.AppendLine(" gettext - get all pdf text content (word by word)");
+            sb.AppendLine("  options: --input, --output, --page");
+            sb.AppendLine("  example: PDFPublisher.exe gettext --input=\"file.pdf\" --output=\"words.txt\" --page=7 (0 for entire pdf)");
+            sb.AppendLine();
+
             sb.Append("Option description:");
 
             ht.Heading = "PDFPublisher utility.";

@@ -551,6 +551,53 @@ namespace PDFPublisher
             tw.Close();
         }
 
+        public static void GetAllWords(string input, string output, int pageOpt)
+        {
+            if (!File.Exists(input))
+                throw new FileNotFoundException(FILE_NOT_FOUND, input);
+
+            var findedItems = new List<string>();
+
+            try
+            {
+                using (PdfReader pdfReader = new PdfReader(input))
+                {
+                    if (pageOpt >= 0 && pageOpt <= pdfReader.NumberOfPages)
+                    {
+                        for (int page = (pageOpt == 0 ? 1 : pageOpt); page <= (pageOpt == 0 ? pdfReader.NumberOfPages : pageOpt); page++)
+                        {
+                            var strategy = new PDFCompare.Comparer.LocationExtractionStrategy();
+                            strategy.Page = page;
+                            PdfTextExtractor.GetTextFromPage(pdfReader, page, strategy);
+                            List<PDFCompare.Comparer.TextItem> items = strategy.GetTextItems();
+
+                            foreach (var item in items)
+                            {
+                                var word = item.Text;
+                                findedItems.Add(word);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine(OPERATION_ERROR);
+                Console.WriteLine(ex.Message);
+                return;
+            }
+            TextWriter tw = new StreamWriter(output);
+            if (findedItems.Count > 0)
+            {
+                foreach (var item in findedItems)
+                {
+                    Console.WriteLine(item);
+                    tw.WriteLine(item);
+                }
+            }
+            tw.Close();
+        }
+
         /// <summary>
         /// https://stackoverflow.com/questions/802269/extract-images-using-itextsharp
         /// </summary>
