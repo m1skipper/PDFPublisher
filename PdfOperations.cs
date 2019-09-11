@@ -586,7 +586,7 @@ namespace PDFPublisher
                 Console.WriteLine(ex.Message);
                 return;
             }
-            TextWriter tw = new StreamWriter(output);
+            TextWriter tw = new StreamWriter(output, false, Encoding.GetEncoding(1251));
             if (findedItems.Count > 0)
             {
                 foreach (var item in findedItems)
