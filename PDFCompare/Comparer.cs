@@ -8,6 +8,7 @@ using iTextSharp;
 using iTextSharp.text;
 using iTextSharp.text.pdf;
 using iTextSharp.text.pdf.parser;
+using System.Globalization;
 
 
 namespace PDFCompare
@@ -472,8 +473,9 @@ namespace PDFCompare
 						else
 						{
 							string st = chunk.text;
+                            int stLength = new StringInfo(st).LengthInTextElements;
 							int iWordStart = 0;
-							while(iWordStart < st.Length)
+                            while(iWordStart < stLength)
 							{
 								if(st[iWordStart] == ' ')
 								{
@@ -486,7 +488,7 @@ namespace PDFCompare
 									continue;
 								}
 								int iWordEnd = iWordStart;
-								while(iWordEnd < st.Length && st[iWordEnd] != ' ')
+                                while(iWordEnd < stLength && st[iWordEnd] != ' ')
 									iWordEnd++;
                                 if (curItem == null)
                                 {
@@ -564,7 +566,8 @@ namespace PDFCompare
 				TextChunk location = new TextChunk(renderInfo.GetText(), segment.GetStartPoint(), segment.GetEndPoint(), renderInfo.GetSingleSpaceWidth());
 				location.iPage = Page;
 
-				if(renderInfo.GetText().Length == 1)
+                int renderInfoTextLength = new StringInfo(renderInfo.GetText()).LengthInTextElements;
+                if (renderInfoTextLength == 1)
 				{
                     location.AscentLines.Add(renderInfo.GetAscentLine());
 					location.DescentLines.Add(renderInfo.GetDescentLine());
@@ -573,7 +576,7 @@ namespace PDFCompare
 				{
 					IList<TextRenderInfo> infos = renderInfo.GetCharacterRenderInfos();
 					System.Diagnostics.Debug.Assert(infos != null);
-					System.Diagnostics.Debug.Assert(renderInfo.GetText().Length == infos.Count);
+                    System.Diagnostics.Debug.Assert(renderInfoTextLength == infos.Count);
 					foreach(TextRenderInfo info in infos)
 					{
 						location.AscentLines.Add(info.GetAscentLine());
