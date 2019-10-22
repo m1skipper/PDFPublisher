@@ -1014,7 +1014,7 @@ namespace PDFPublisher
 
                                 // Повернем штрихкод как текст повернут
                                 float w = (item.DescentLine.GetEndPoint().Subtract(item.DescentLine.GetStartPoint())).Length;
-                                img.ScaleToFit(w, w*img.Height/img.Width);
+                                // img.ScaleToFit(w, w*img.Height/img.Width);
                                 matrix.Rotate(rotateDegrees);
 
                                 // Отмасштабируем штрихкод чтобы вписать в п/у текста
