@@ -433,10 +433,10 @@ namespace PDFCompare
 							if(chunk.SameLine(lastChunk))
 							{
 								float dist = chunk.DistanceFromEndOf(lastChunk);
-								if(dist < -chunk.charSpaceWidth)
+								if (dist < -chunk.charSpaceWidth)
 									bStartNewItem = true;
 								// we only insert a blank space if the trailing character of the previous string wasn't a space, and the leading character of the current string isn't a space
-								else if(dist > chunk.charSpaceWidth / 2.0f && chunk.text[0] != ' ' && lastChunk.text[lastChunk.text.Length - 1] != ' ')
+								else if (dist > chunk.charSpaceWidth / 2.0f && chunk.text.Length>0 && chunk.text[0] != ' ' && lastChunk.text.Length>0 && lastChunk.text[lastChunk.text.Length - 1] != ' ')
 									bStartNewItem = true;
 							}
 							else
@@ -534,15 +534,23 @@ namespace PDFCompare
 			{
 				string stImageName = null;
 				ImageData image = new ImageData();
-				image.data = renderInfo.GetImage().GetImageAsBytes();
-				foreach(KeyValuePair<string, ImageData> entry in m_Images)
+				try
 				{
-					if(entry.Value.data.SequenceEqual(image.data))
+					image.data = renderInfo.GetImage().GetImageAsBytes();
+					foreach (KeyValuePair<string, ImageData> entry in m_Images)
 					{
-						stImageName = entry.Key;
-						break;
+						if (entry.Value.data.SequenceEqual(image.data))
+						{
+							stImageName = entry.Key;
+							break;
+						}
 					}
 				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Warn: RenderImage fail page {Page} PDFCompareTextItemImage{m_Images.Count + 1}. {ex.Message}");
+				}
+
 				if(string.IsNullOrEmpty(stImageName))
 				{
 					stImageName = string.Format("PDFCompareTextItemImage{0}", m_Images.Count + 1);
@@ -566,24 +574,27 @@ namespace PDFCompare
 				TextChunk location = new TextChunk(renderInfo.GetText(), segment.GetStartPoint(), segment.GetEndPoint(), renderInfo.GetSingleSpaceWidth());
 				location.iPage = Page;
 
-                int renderInfoTextLength = new StringInfo(renderInfo.GetText()).LengthInTextElements;
-                if (renderInfoTextLength == 1)
+				int renderInfoTextLength = new StringInfo(renderInfo.GetText()).LengthInTextElements;
+				if (renderInfoTextLength > 0)
 				{
-                    location.AscentLines.Add(renderInfo.GetAscentLine());
-					location.DescentLines.Add(renderInfo.GetDescentLine());
-				}
-				else
-				{
-					IList<TextRenderInfo> infos = renderInfo.GetCharacterRenderInfos();
-					System.Diagnostics.Debug.Assert(infos != null);
-                    System.Diagnostics.Debug.Assert(renderInfoTextLength == infos.Count);
-					foreach(TextRenderInfo info in infos)
+					if (renderInfoTextLength == 1)
 					{
-						location.AscentLines.Add(info.GetAscentLine());
-						location.DescentLines.Add(info.GetDescentLine());
+						location.AscentLines.Add(renderInfo.GetAscentLine());
+						location.DescentLines.Add(renderInfo.GetDescentLine());
 					}
-				}
-				m_LocationalResult.Add(location);
+					else
+					{
+						IList<TextRenderInfo> infos = renderInfo.GetCharacterRenderInfos();
+						System.Diagnostics.Debug.Assert(infos != null);
+						//System.Diagnostics.Debug.Assert(renderInfoTextLength == infos.Count);
+						foreach (TextRenderInfo info in infos)
+						{
+							location.AscentLines.Add(info.GetAscentLine());
+							location.DescentLines.Add(info.GetDescentLine());
+						}
+					}
+					m_LocationalResult.Add(location);
+				 }
 			}
 			//--------------------------------------------------------------------------------------------------
 			private class TextChunk : IComparable<TextChunk>
