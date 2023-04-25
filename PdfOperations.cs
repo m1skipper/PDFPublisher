@@ -1025,6 +1025,18 @@ namespace PDFPublisher
                                 float scaleY = scaleByHeight ? heightLabel / img.Height : 0;
                                 if (scaleX != 0 && scaleY == 0) scaleY = scaleX;
                                 if (scaleY != 0 && scaleX == 0) scaleX = scaleY;
+
+                                if (center)
+                                {
+                                    float realWidthLabel = (item.DescentLine.GetEndPoint().Subtract(item.DescentLine.GetStartPoint())).Length;
+                                    float realHeightLabel = (item.AscentLine.GetStartPoint().Subtract(item.DescentLine.GetStartPoint())).Length;
+                                    float realWidthImg = scaleX!=0 ? img.Width * scaleX : img.Width;
+                                    float realHeightImg = scaleY!=0 ? img.Height * scaleY : img.Height;
+                                    float dx = (realWidthLabel - realWidthImg)/2;
+                                    float dy = (realHeightLabel - realHeightImg)/2;
+                                    matrix.Translate(dx, dy);
+                                }
+
                                 if (scaleX != 0 && scaleY != 0)
                                 {
                                     matrix.Scale(scaleX, scaleY);
